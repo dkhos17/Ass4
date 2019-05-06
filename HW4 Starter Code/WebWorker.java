@@ -1,12 +1,25 @@
 import java.io.*;
 import java.net.*;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import javax.swing.*;
 
 public class WebWorker extends Thread {
-/*
-  This is the core web/download i/o code...
+	
+	private String urlString;
+	private WebFrame.Launcher launch;
+	private int idx;
+	private long timer;
+	public WebWorker(WebFrame.Launcher launch, String urlString, int idx) {
+		this.urlString = urlString;
+		this.launch = launch;
+		this.idx = idx;
+	}
+	
+	public void run() {
+		timer = System.currentTimeMillis();
  		InputStream input = null;
 		StringBuilder contents = null;
 		try {
@@ -31,15 +44,29 @@ public class WebWorker extends Thread {
 			}
 			
 			// Successful download if we get here
-			
+			timer = System.currentTimeMillis() - timer;
+			Calendar cal = Calendar.getInstance();
+	        DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+			String val = dateFormat.format(cal.getTime()) + " ";
+			val += Long.toString(timer) + "ms ";
+			val += Integer.toString(contents.length()) + " bytes";
+			launch.setValue(val, idx, 1);
+			launch.download_commit();
+			return;
 		}
 		// Otherwise control jumps to a catch...
-		catch(MalformedURLException ignored) {}
-		catch(InterruptedException exception) {
-			// YOUR CODE HERE
-			// deal with interruption
+		catch(MalformedURLException ignored) {
+			launch.setValue("err", idx, 1);
+			launch.download_commit();
 		}
-		catch(IOException ignored) {}
+		catch(InterruptedException exception) {
+			launch.setValue("interrupted", idx, 1);
+			launch.download_commit();
+		}
+		catch(IOException ignored) {
+			launch.setValue("err", idx, 1);
+			launch.download_commit();
+		}
 		// "finally" clause, to close the input stream
 		// in any case
 		finally {
@@ -48,7 +75,7 @@ public class WebWorker extends Thread {
 			}
 			catch(IOException ignored) {}
 		}
-
-*/
+	}
+	
 	
 }
