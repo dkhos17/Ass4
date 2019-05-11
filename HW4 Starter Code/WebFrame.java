@@ -12,11 +12,28 @@ public class WebFrame extends JFrame {
 	public class Launcher extends Thread{
 		private Semaphore wait;
 		private int num;
+		private long start;
 		public Launcher(int num) {
+			start = System.currentTimeMillis();
 			this.num = num;
+			wait = new Semaphore(num);
 		}
 		
-		public void download_commit() {
+		public synchronized void download_commit() {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String[] curr = complet.getText().split(" ");
+						int next = Integer.parseInt(curr[1]) + 1;
+						complet.setText(curr[0] + " " + Integer.toString(next));
+						
+						String[] time = elaps.getText().split(" ");
+						long end = System.currentTimeMillis() - start;
+						elaps.setText(time[0] + " " + Long.toString(end));
+						
+						load.setValue(load.getValue()+1);
+					}
+				});
 			wait.release();
 		}
 		
@@ -29,12 +46,19 @@ public class WebFrame extends JFrame {
 			});
 		}
 		
+		
 		@Override
 		public void run() {
 			int i = 0;
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					String[] curr = running.getText().split(" ");
+					running.setText(curr[0] + " " + Integer.toString(num+1));			
+				}
+			});
 			WebWorker worker[] = new WebWorker[mod.getRowCount()];
 			try {
-				wait = new Semaphore(num);
 				for(; i < mod.getRowCount(); i++) {
 					if(isInterrupted()) {
 						for(int j = 0; j < i; j++)
@@ -55,6 +79,7 @@ public class WebFrame extends JFrame {
 	private JButton single, concurrent, stop;
 	private JLabel running, complet, elaps;
 	private DefaultTableModel mod;
+	private JProgressBar load;
 	private Launcher launch;
 	private JTextField field;
 	private JTable table;
@@ -85,15 +110,16 @@ public class WebFrame extends JFrame {
 		field.setMaximumSize(new Dimension(200,100));
 		down.add(field);
 		
-		running = new JLabel("Running: ");
-		complet = new JLabel("Completed: ");
-		elaps = new JLabel("Elapsed: ");
+		running = new JLabel("Running: 0");
+		complet = new JLabel("Completed: 0");
+		elaps = new JLabel("Elapsed: 0");
 		down.add(running);
 		down.add(complet);
 		down.add(elaps);
 		down.add(new JLabel("\n"));
 		
-		JProgressBar load = new JProgressBar();
+		load = new JProgressBar(0, mod.getRowCount());
+        load.setStringPainted(true); 
 		down.add(load);
 		down.add(new JLabel("\n"));
 		
@@ -162,6 +188,7 @@ public class WebFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				launch.interrupt();
+				running.setText("Running: 0");
 			}
 		});
 	}
