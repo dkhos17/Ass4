@@ -172,6 +172,10 @@ public class WebFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				launch = new Launcher(1);
+				for(int i = 0; i < mod.getRowCount(); i++) {
+					launch.setValue("", i, 1);
+				}
+				load.setValue(0);
 				launch.start();
 			}
 		});
@@ -180,6 +184,10 @@ public class WebFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				launch = new Launcher(Integer.parseInt(field.getText()));
+				for(int i = 0; i < mod.getRowCount(); i++) {
+					launch.setValue("", i, 1);
+				}
+				load.setValue(0);
 				launch.start();
 			}
 		});
@@ -189,6 +197,8 @@ public class WebFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				launch.interrupt();
 				running.setText("Running: 0");
+				complet.setText("Completed: 0");
+				elaps.setText("Elapsed: 0");
 			}
 		});
 	}
