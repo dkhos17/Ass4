@@ -58,10 +58,10 @@ public class Bank {
 	
 	
 	public static void main(String[] args) {
-		Bank bank = new Bank(Integer.parseInt(args[0]), args[1]);
+		Bank bank = new Bank(Integer.parseInt(args[1]), args[0]);
 		
 		try {
-			BufferedReader bf = new BufferedReader(new FileReader(args[1]));
+			BufferedReader bf = new BufferedReader(new FileReader(args[0]));
 			String line = bf.readLine();
 				
 			while (line != null) {
@@ -75,7 +75,7 @@ public class Bank {
 			}
 			bf.close();
 
-			for(int i = 0; i < Integer.parseInt(args[0]); i++) {
+			for(int i = 0; i < Integer.parseInt(args[1]); i++) {
 				Q.put(new Transaction(-1, -1, 0));
 			}
 			wait.await();

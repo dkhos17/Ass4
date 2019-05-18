@@ -39,6 +39,7 @@ public class WebWorker extends Thread {
 			int len;
 			contents = new StringBuilder(1000);
 			while ((len = reader.read(array, 0, array.length)) > 0) {
+				if(isInterrupted()) break;
 				contents.append(array, 0, len);
 				Thread.sleep(100);
 			}

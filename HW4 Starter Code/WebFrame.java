@@ -31,10 +31,25 @@ public class WebFrame extends JFrame {
 						long end = System.currentTimeMillis() - start;
 						elaps.setText(time[0] + " " + Long.toString(end));
 						
+						String[] run = running.getText().split(" ");
+						int cnt = Integer.parseInt(run[1]) + 1;
+						running.setText(run[0] + " " + Integer.toString(cnt-1));
+						
 						load.setValue(load.getValue()+1);
 					}
 				});
 			wait.release();
+		}
+		
+		public void run_comm() {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					String[] run = running.getText().split(" ");
+					int cnt = Integer.parseInt(run[1]) + 1;
+					running.setText(run[0] + " " + Integer.toString(cnt+1));
+				}
+			});
 		}
 		
 		public void setValue(String val, int r, int c) {
@@ -50,13 +65,6 @@ public class WebFrame extends JFrame {
 		@Override
 		public void run() {
 			int i = 0;
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					String[] curr = running.getText().split(" ");
-					running.setText(curr[0] + " " + Integer.toString(num+1));			
-				}
-			});
 			WebWorker worker[] = new WebWorker[mod.getRowCount()];
 			try {
 				for(; i < mod.getRowCount(); i++) {
@@ -72,6 +80,11 @@ public class WebFrame extends JFrame {
 			} catch (InterruptedException e) {
 				for(int j = 0; j < i; j++)
 					worker[j].interrupt();
+			} 
+			for(int w = 0; w < i; w++) {
+				try {
+					worker[w].join();
+				} catch (InterruptedException e) {}
 			}
 		}
 	}
@@ -183,6 +196,7 @@ public class WebFrame extends JFrame {
 		concurrent.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(field.getText().isEmpty()) return;
 				launch = new Launcher(Integer.parseInt(field.getText()));
 				for(int i = 0; i < mod.getRowCount(); i++) {
 					launch.setValue("", i, 1);
@@ -204,7 +218,11 @@ public class WebFrame extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		WebFrame webf = new WebFrame(args[0]);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				WebFrame webf = new WebFrame(args[0]);
+			}
+		});
 	}
 
 }
