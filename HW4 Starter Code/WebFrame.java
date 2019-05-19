@@ -11,29 +11,25 @@ public class WebFrame extends JFrame {
 	
 	public class Launcher extends Thread{
 		private Semaphore wait;
-		private int num;
+		private int num, comp;
 		private long start;
 		public Launcher(int num) {
 			start = System.currentTimeMillis();
-			this.num = num;
+			this.num = this.comp = 0;
 			wait = new Semaphore(num);
+			run_comm();
 		}
 		
 		public synchronized void download_commit() {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						String[] curr = complet.getText().split(" ");
-						int next = Integer.parseInt(curr[1]) + 1;
-						complet.setText(curr[0] + " " + Integer.toString(next));
-						
 						String[] time = elaps.getText().split(" ");
 						long end = System.currentTimeMillis() - start;
 						elaps.setText(time[0] + " " + Long.toString(end));
 						
-						String[] run = running.getText().split(" ");
-						int cnt = Integer.parseInt(run[1]) + 1;
-						running.setText(run[0] + " " + Integer.toString(cnt-1));
+						complet.setText("Completed " + Integer.toString(++comp));
+						running.setText("Running: " + Integer.toString(--num));
 						
 						load.setValue(load.getValue()+1);
 					}
@@ -45,22 +41,25 @@ public class WebFrame extends JFrame {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					String[] run = running.getText().split(" ");
-					int cnt = Integer.parseInt(run[1]) + 1;
-					running.setText(run[0] + " " + Integer.toString(cnt+1));
+					running.setText("Running " + Integer.toString(++num));
 				}
 			});
 		}
 		
 		public void setValue(String val, int r, int c) {
+			setVal(val, r, c);
+		}
+
+		public void resetLabels() {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					mod.setValueAt(val, r, c);				
+					running.setText("Running: 0");
+					complet.setText("Completed: 0");
+					elaps.setText("Elapsed: 0");
 				}
 			});
 		}
-		
 		
 		@Override
 		public void run() {
@@ -71,15 +70,18 @@ public class WebFrame extends JFrame {
 					if(isInterrupted()) {
 						for(int j = 0; j < i; j++)
 							worker[j].interrupt();
+						resetLabels();
 						return;
 					}
 					wait.acquire();
+					run_comm();
 					worker[i] = new WebWorker(this, (String) mod.getValueAt(i, 0), i);
 					worker[i].start();
 				}
 			} catch (InterruptedException e) {
 				for(int j = 0; j < i; j++)
 					worker[j].interrupt();
+				resetLabels();
 			} 
 			for(int w = 0; w < i; w++) {
 				try {
@@ -151,11 +153,11 @@ public class WebFrame extends JFrame {
 		setVisible(true);
 	}
 	
-	private void setVal(String line, int r, int c) {
+	private void setVal(String line, int row, int col) {
 		SwingUtilities.invokeLater( new Runnable() {
 			@Override
 			public void run() {
-				mod.setValueAt(line, r, c);				
+				mod.setValueAt(line, row, col);				
 			}
 		});
 	}
